@@ -1,5 +1,8 @@
 %% 数据处理函数定义：
 function [x_v,y_v,v] = pro_trkd_data_auto(file_path,m_sub,n_sub,title_str,save_if,result_save_path,fig_position)
+disp(title_str+result_save_path);
+[folder_path, title_str, ~] = fileparts(file_path);
+result_save_path = folder_path+"/result/";
 %% 获取数据
 % data = uiimport(file_path);
 data = importdata(file_path);
@@ -117,8 +120,39 @@ if save_if
         save_mat = {'f','x_v','y_v','v','P'};
         writecell(save_mat,csv_save_file_path)
     end
-    save_mat = [fi,x_v,y_v,v];
+    
+
+    P_file_path = folder_path+"/RigolDS"+num_str+".csv";
+    if exist(P_file_path,"file")
+        fig_position_P = fig_position;
+        fig_position_P(1) = fig_position(1)+fig_position(3);
+        P = get_P_24(P_file_path,50,24,100,true,fig_position_P);
+    else
+        P = 0;
+    end
+    save_mat = [fi,x_v,y_v,v,P];
     writematrix(save_mat,csv_save_file_path,'WriteMode','append')
+
+    % 定义要写入的数据
+    data = struct();
+    data.file_name = file_path;
+    data.v = v;
+    data.f = fi;
+    data.P = P;
+
+    % 将数据编码为 JSON 格式的字符串
+    jsonStr = jsonencode(data);
+    % 指定要写入的文件路径和名称
+    filename = result_save_path+title_str+".json";
+    % 打开文件进行写入（'w' 模式表示写入，如果文件不存在则创建，存在则覆盖）
+    fileID = fopen(filename, 'w');
+    % 将 JSON 字符串写入文件
+    fprintf(fileID, '%s', jsonStr);
+    % 关闭文件
+    fclose(fileID);
+    % 提示用户操作完成
+    filename = result_save_path+"all_data.json";
+    updateJsonFile(data, filename);
 end
 
 end
