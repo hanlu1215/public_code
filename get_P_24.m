@@ -32,8 +32,8 @@ if show_flag
     xlabel("t/s")
     ylabel("I/A")
     xlim([0,2]);
-    if ~isempty(fig_position)
-        fig.Position = fig_position;
-    end
+%     if ~isempty(fig_position)
+%         fig.Position = fig_position;
+%     end
 end
 end
